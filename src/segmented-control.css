@@ -1,0 +1,29 @@
+.segmented-control {
+    display: inline-flex;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.segmented-control input[type="radio"] {
+    display: none;
+}
+
+.segmented-control label {
+    padding: 10px 20px;
+    background: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s, color 0.2s;
+    border-right: 1px solid #ccc;
+}
+
+.segmented-control label:last-of-type {
+    border-right: none;
+}
+
+.segmented-control input[type="radio"]:checked+label {
+    background: #007bff;
+    color: white;
+}
