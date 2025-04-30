@@ -1,11 +1,13 @@
-import mapboxgl, { ExpressionSpecification, GeoJSONSource, Map, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
+import counties from "./data/geo/counties_fips_generalized.json"
+import states from "./data/geo/states_generalized.json"
+
+import mapboxgl, { ExpressionSpecification, GeoJSONSource, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 import 'mapbox-gl/dist/mapbox-gl.css';
-import counties from "./data/counties_fips_generalized.json"
-import states from "./data/states_generalized.json"
-mapboxgl.accessToken = import.meta.env.VITE_PUBLIC_MAPBOX_TOKEN!;
 // @ts-expect-error no types
 import { jenksBuckets } from "geobuckets";
 import centerOfMass from '@turf/center-of-mass';
+
+mapboxgl.accessToken = import.meta.env.VITE_PUBLIC_MAPBOX_TOKEN!;
 
 // states.features.forEach((feature, i, a) => {
 //     a[i].properties.bbox = bbox(feature);
@@ -118,7 +120,6 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
             &&
             county?.properties?.[selectedVisualizationVariable]
         )
-        console.log({ candidateCounties })
         // Sort by variable and assign top10: <order> to the top 10 items
         candidateCounties.sort((a, b) => {
             const aNum = a.properties![selectedVisualizationVariable];
@@ -142,7 +143,6 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
     }
 
     function setTop10() {
-        console.log("top-10", selectedVisualizationVariable, selectedState?.properties.State)
         const source = map.getSource("top-10-source") as GeoJSONSource;
         if (!source) return;
 
@@ -153,7 +153,6 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
 
 
     function focusState(state: TargetFeature) {
-        if (state.id == selectedState?.id) return;
 
         // Clean previous select
         if (selectedState) {
@@ -213,7 +212,13 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
             type: 'click',
             target: { layerId: 'state-layer' },
             handler: ({ feature }) => {
-                if (feature) focusState(feature)
+                if (!feature || selectedState) {
+                    // If no feature or a state is already selected, blur to country-wide
+                    blurState()
+                    return
+                };
+
+                focusState(feature)
             }
         });
         // Clicking on the map will deselect the selected feature
@@ -230,7 +235,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
         // Add custom sources and layers to map
         map.addSource("state-source", {
             type: 'geojson',
-            data: states,
+            data: states as GeoJSON.FeatureCollection,
             generateId: true
         })
         map.addSource("county-source", {
