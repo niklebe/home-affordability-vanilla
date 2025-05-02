@@ -1,7 +1,7 @@
 import counties from "./data/geo/counties_fips_generalized.json"
 import states from "./data/geo/states_generalized.json"
 
-import mapboxgl, { ExpressionSpecification, GeoJSONSource, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
+import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONSource, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 import 'mapbox-gl/dist/mapbox-gl.css';
 // @ts-expect-error no types
 import { jenksBuckets } from "geobuckets";
@@ -169,49 +169,101 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
             map.fitBounds(bounds, { padding: 50 })
         }
 
+        const stateNegativeFilterExpression = ["!=", ["get", "STATE"], selectedState?.properties.STATE];
+        map.setFilter("state-negative-layer", stateNegativeFilterExpression)
+
         // Reset top 10
         setTop10()
+
+        // Register interaction listeners
+        handleFocusInteractions()
     }
 
     function blurState() {
         if (selectedState) {
             map.setFeatureState(selectedState, { select: false });
+
+            // Remove hover to all state counties
+            const stateFilterExpression = ["==", ["get", "STATE"], selectedState.properties.STATE!];
+            const stateCounties = map.querySourceFeatures("county-source", { filter: stateFilterExpression })
+            stateCounties.forEach(feature => {
+                map.setFeatureState({ id: feature.id, source: "county-source" } as FeatureSelector, { hover: false });
+            })
+
             selectedState = undefined;
         }
 
         setTop10()
         map.fitBounds(usaBbox, { padding: 50 })
+
+        map.setFilter("state-negative-layer", ["boolean", false])
+
+        // // Remove hover to all rendered states
+        // const allStates = map.querySourceFeatures("state-source")
+        // allStates.forEach(feature => {
+        //     map.setFeatureState({ id: feature.id, source: "state-source" } as FeatureSelector, { hover: false });
+        // })
+
+        // Register interaction listeners
+        handleBlurInteractions()
+
     }
 
-
     // Hover effects and selections
-    function addInteractions() {
-        // Hovering over a feature will highlight it
-        map.addInteraction('state-mouseenter', {
+    function handleFocusInteractions() {
+        // Previous interactions are removed because of different filters
+        map.removeInteraction('county-mouseenter');
+        map.removeInteraction('county-mouseleave');
+        map.removeInteraction('state-mouseenter');
+        map.removeInteraction('state-mouseleave');
+        map.removeInteraction('state-click');
+        map.removeInteraction('county-click');
+
+        const state = selectedState?.properties.STATE;
+        const stateFilterExpression = ["==", ["get", "STATE"], state];
+
+        // Hovering over a county feature will highlight it
+        map.addInteraction('county-mouseenter', {
             type: 'mouseenter',
-            target: { layerId: 'state-layer' },
+            target: { layerId: 'county-hover-layer' },
+            filter: stateFilterExpression,
             handler: ({ feature }) => {
-                if (!feature) return
+                if (!feature || !selectedState) return
+
                 map.setFeatureState(feature, { hover: true });
-                map.getCanvas().style.cursor = 'pointer';
+
+                // Add top counties popup
+                const content = document.createElement("div")
+                content.textContent = "County stats....."
+                const centroid = centerOfMass(feature);
+                openPopup(
+                    centroid.geometry.coordinates[0],
+                    centroid.geometry.coordinates[1],
+                    content
+                );
             }
         });
-
-        // Moving the mouse away from a feature will remove the highlight
-        map.addInteraction('state-mouseleave', {
+        // Moving the mouse away from a county will remove the highlight
+        map.addInteraction('county-mouseleave', {
             type: 'mouseleave',
-            target: { layerId: 'state-layer' },
+            target: { layerId: 'county-hover-layer' },
+            filter: stateFilterExpression,
             handler: ({ feature }) => {
-                if (feature) map.setFeatureState(feature, { hover: false });
+                if (!feature || !selectedState) return;
+                map.setFeatureState(feature, { hover: false });
                 map.getCanvas().style.cursor = '';
             }
         });
 
-        // Selections
-        map.addInteraction('state-click', {
+        map.addInteraction('county-click', {
             type: 'click',
             target: { layerId: 'state-layer' },
+            filter: stateFilterExpression,
             handler: ({ feature }) => {
+                if (!feature) return;
+
+                map.setFeatureState(feature, { hover: false });
+
                 if (!feature || selectedState) {
                     // If no feature or a state is already selected, blur to country-wide
                     blurState()
@@ -221,7 +273,72 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
                 focusState(feature)
             }
         });
-        // Clicking on the map will deselect the selected feature
+    }
+
+    function handleBlurInteractions() {
+        // Previous interactions are removed because of different filters
+        map.removeInteraction('county-mouseenter');
+        map.removeInteraction('county-mouseleave');
+        map.removeInteraction('state-mouseenter');
+        map.removeInteraction('state-mouseleave');
+        map.removeInteraction('state-click');
+        map.removeInteraction('county-click');
+
+        // Hovering over a state feature will highlight it
+        map.addInteraction('state-mouseenter', {
+            type: 'mouseenter',
+            target: { layerId: 'state-layer' },
+            handler: ({ feature }) => {
+
+                if (!feature || (selectedState && selectedState.id === feature.id)) return
+
+                map.setFeatureState(feature, { hover: true });
+                map.getCanvas().style.cursor = 'pointer';
+
+                // Add top counties popup
+                const content = document.createElement("div")
+                content.textContent = "Top cities are....."
+                const centroid = centerOfMass(feature);
+                openPopup(
+                    centroid.geometry.coordinates[0],
+                    centroid.geometry.coordinates[1],
+                    content
+                );
+            }
+        });
+        // Moving the mouse away from a feature will remove the highlight
+        map.addInteraction('state-mouseleave', {
+            type: 'mouseleave',
+            target: { layerId: 'state-layer' },
+            handler: ({ feature }) => {
+                if (!feature) return
+                map.setFeatureState(feature, { hover: false });
+                map.getCanvas().style.cursor = '';
+            }
+        });
+
+        // Selections
+        map.addInteraction('state-click', {
+            type: 'click',
+            target: { layerId: 'state-layer' },
+            handler: ({ feature }) => {
+                if (!feature) return;
+
+                map.setFeatureState(feature, { hover: false });
+
+                if (!feature || selectedState) {
+                    // If no feature or a state is already selected, blur to country-wide
+                    blurState()
+                    return
+                };
+
+                focusState(feature)
+            }
+        });
+    }
+
+    function handleCommonInteractions() {
+        // Clicking on background will deselect state
         map.addInteraction('background-click', {
             type: 'click',
             handler: () => {
@@ -229,6 +346,32 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
             }
         });
     }
+
+    function openPopup(longitude: number, latitude: number, content: HTMLDivElement) {
+        map.fire("closeAllPopups")
+        const placeholder = document.createElement('div');
+        placeholder.style.pointerEvents = "none";
+        placeholder.style.maxWidth = "calc(100vw - 48px)";
+        // placeholder.style.height = "1000px";
+        // https://react.dev/blog/2022/03/08/react-18-upgrade-guide#updates-to-client-rendering-apis
+        placeholder.appendChild(content)
+
+        let popup = new Popup({
+            focusAfterOpen: false,
+            closeButton: false,
+            maxWidth: "none",
+            offset: 20,
+        })
+            .setLngLat([longitude, latitude])
+            .setDOMContent(placeholder)
+            .addTo(map) as Popup | undefined;
+
+        map.once("closeAllPopups", () => {
+            popup?.remove();
+            popup = undefined;
+        })
+    }
+
 
     map.once("load", () => {
 
@@ -240,7 +383,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
         })
         map.addSource("county-source", {
             type: 'geojson',
-            data: countiesWithData
+            data: countiesWithData,
+            generateId: true
         })
 
         map.addSource("top-10-source", {
@@ -291,6 +435,33 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
                 "fill-opacity": 0.3
             }
         })
+
+        map.addLayer({
+            id: "state-negative-layer",
+            type: 'fill',
+            source: "state-source",
+            slot: "bottom",
+            paint: {
+                "fill-color": 'white',
+                "fill-opacity": 0.8
+            },
+            filter: ["boolean", false]
+        })
+        map.addLayer({
+            id: "county-hover-layer",
+            type: 'fill',
+            source: "county-source",
+            slot: "bottom",
+            paint: {
+                "fill-color": [
+                    'case',
+                    ['==', ['feature-state', 'hover'], true],
+                    'gray',
+                    'transparent'
+                ],
+                "fill-opacity": 0.3
+            }
+        })
         map.addLayer({
             id: "state-boundary-layer",
             type: 'line',
@@ -312,8 +483,6 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
                 ]
             }
         })
-
-
 
         map.addLayer({
             id: "top-10-circle",
@@ -347,7 +516,9 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
         map.removeLayer("continent-label");
         map.removeLayer("country-label");
 
-        addInteractions();
+        // Interactions at start up
+        handleCommonInteractions();
+        handleBlurInteractions();
 
         // Set up event listener for coloring the map and hanging top 10, when control changes visualization variable
         document.addEventListener("visualizationColumnSelected", (event) => {
