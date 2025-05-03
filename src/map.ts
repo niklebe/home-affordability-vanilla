@@ -9,11 +9,6 @@ import centerOfMass from '@turf/center-of-mass';
 
 mapboxgl.accessToken = import.meta.env.VITE_PUBLIC_MAPBOX_TOKEN!;
 
-// states.features.forEach((feature, i, a) => {
-//     a[i].properties.bbox = bbox(feature);
-// });
-// console.log({ states })
-
 const usaBbox: [number, number, number, number] = [-124.848974, 24.396308, -66.93457, 49.384358];
 
 function notFalsy<T>(value: T): value is NonNullable<T> {
@@ -41,7 +36,7 @@ const stepsFromValues = async (
 };
 
 
-export async function setupMap(data: { [key: string]: unknown }[], visualizedColumns: string[]) {
+export async function setupMap(data: { [key: string]: unknown }[], visualizationVariables: string[], rankVariable: string) {
     // Add visualized column data to geo-features
     const countiesWithData = {
         type: 'FeatureCollection',
@@ -52,18 +47,25 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
 
             if (!match) return null;
 
-            for (const col of visualizedColumns) {
+            for (const col of visualizationVariables) {
                 f.properties[col] = match[col]
             }
+            f.properties["Rank"] = match["Rank"]
             return f
         }).filter(notFalsy)
     } as GeoJSON.FeatureCollection
 
-    console.log({ countiesWithData })
+    const getTop3CountiesInState = (state: string) => {
+        const countiesInState = countiesWithData.features.filter(c => c.properties?.STATE == state);
+        return countiesInState.sort((a, b) => {
+            if (!a?.properties?.Rank || !b?.properties?.Rank) return 0;
+            return a.properties.Rank - b.properties.Rank
+        }).slice(0, 3)
+    }
 
     // Pre-generate natural breaks values for every visualization column
     const visualizationSteps = {} as { [key: string]: number[] };
-    for (const col of visualizedColumns) {
+    for (const col of visualizationVariables) {
         const values = data.map(x => x[col]).filter(x => typeof x === "number");
         const colSteps = await stepsFromValues(values)
         visualizationSteps[col] = colSteps
@@ -78,8 +80,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
         }
     });
 
-
-    let selectedVisualizationVariable = visualizedColumns[0];
+    let selectedVisualizationVariable = visualizationVariables[0];
     let selectedState: TargetFeature | undefined;
     const metricTopName = () => `Top10 -${selectedState ? ` ${selectedState.properties.State}-` : ''} ${selectedVisualizationVariable}`
 
@@ -232,9 +233,30 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
 
                 map.setFeatureState(feature, { hover: true });
 
-                // Add top counties popup
+                // Add county popup
                 const content = document.createElement("div")
-                content.textContent = "County stats....."
+                content.classList = "popup-content"
+
+                const title = document.createElement("strong")
+                title.classList = "popup-title"
+                const state = states.features.find(s => s.properties.STATE == feature.properties.STATE)
+                title.textContent = `${feature.properties.NAME}${state ? ", " + state.properties.State : ""}`;
+                const list = document.createElement("ul")
+                list.classList = "popup-list"
+                for (const col of visualizationVariables) {
+                    const data = document.createElement("li")
+                    const dataTitle = document.createElement("span")
+                    dataTitle.innerText = col
+                    const dataValue = document.createElement("strong")
+                    dataValue.innerText = feature.properties[col]
+                    data.appendChild(dataTitle)
+                    data.appendChild(dataValue)
+                    list.appendChild(data)
+                }
+
+                content.appendChild(title)
+                content.appendChild(list)
+
                 const centroid = centerOfMass(feature);
                 openPopup(
                     centroid.geometry.coordinates[0],
@@ -295,9 +317,39 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
                 map.setFeatureState(feature, { hover: true });
                 map.getCanvas().style.cursor = 'pointer';
 
-                // Add top counties popup
+                // Add state popup
                 const content = document.createElement("div")
-                content.textContent = "Top cities are....."
+                content.classList = "popup-content"
+
+                const title = document.createElement("strong")
+                title.classList = "popup-title"
+                title.textContent = `${feature.properties.Name}`;
+                const subtitle = document.createElement("p")
+                subtitle.textContent = `Top counties in ${rankVariable}`
+                const subtitle2 = document.createElement("p")
+                subtitle2.textContent = `(National rank)`
+                const list = document.createElement("ul")
+                list.classList = "popup-list"
+
+                const counties = getTop3CountiesInState(feature.properties.STATE);
+
+                counties.forEach((county, index) => {
+                    const data = document.createElement("li")
+                    const dataTitle = document.createElement("span")
+                    dataTitle.innerText = `${index + 1}. ${county?.properties?.NAME ? county.properties.NAME : ""}`
+                    const dataValue = document.createElement("strong")
+                    dataValue.innerText = `${county?.properties?.Rank ? "#" + county.properties.Rank : ""}`
+                    data.appendChild(dataTitle)
+                    data.appendChild(dataValue)
+                    list.appendChild(data)
+                })
+
+                content.appendChild(title)
+                content.appendChild(subtitle)
+                content.appendChild(list)
+                content.appendChild(subtitle2)
+
+
                 const centroid = centerOfMass(feature);
                 openPopup(
                     centroid.geometry.coordinates[0],
@@ -343,6 +395,14 @@ export async function setupMap(data: { [key: string]: unknown }[], visualizedCol
             type: 'click',
             handler: () => {
                 blurState();
+            }
+        });
+
+        // Entering background will remove popups
+        map.addInteraction('background-enter', {
+            type: 'mouseenter',
+            handler: () => {
+                map.fire("closeAllPopups")
             }
         });
     }

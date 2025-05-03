@@ -5,13 +5,17 @@ import { parseCsv } from './parse.ts'
 import { setupTable } from "./table.ts"
 
 // Change this to set your CSV columns to use for visualization
-const visualizedColumns = ["Variable A", "Variable B"]
+const visualizationVariables = ["Variable A", "Variable B", "Variable C", "Variable D", "Variable E"]
 
-const data = parseCsv(csvData, visualizedColumns)
+// Change this to set which variable determines the national county rank shown in popups.
+// Has to be one of visualizationVariables
+const rankVariable = "Variable A"
 
-setupSegmentedControl("visualization-control", visualizedColumns)
+const data = parseCsv(csvData, visualizationVariables, rankVariable)
 
-setupMap(data, visualizedColumns)
+setupSegmentedControl("visualization-control", visualizationVariables)
+
+setupMap(data, visualizationVariables, rankVariable)
 
 setupTable("visualization-table", data)
 

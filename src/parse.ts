@@ -1,4 +1,4 @@
-export function parseCsv(csv: string, numberColumns: string[]) {
+export function parseCsv(csv: string, numberColumns: string[], mainRankVariable: string) {
     const rows = [];
     let row = [], value = '';
     let inQuotes = false;
@@ -35,7 +35,7 @@ export function parseCsv(csv: string, numberColumns: string[]) {
     }
 
     const [headerRow, ...dataRows] = rows;
-    return dataRows.map(row => {
+    const data = dataRows.map(row => {
         const obj = {} as { [key: string]: unknown };
         headerRow.forEach((key, i) => {
             // If data point is FIPS ID or visualization numeric value, convert to Number
@@ -43,5 +43,13 @@ export function parseCsv(csv: string, numberColumns: string[]) {
         });
         return obj;
     });
+
+    return data.sort((a, b) => {
+        if (!a[mainRankVariable] || !b[mainRankVariable]) return 0
+        return (b[mainRankVariable] as number) - (a[mainRankVariable] as number)
+    }).map((item, index) => ({
+        Rank: index + 1,
+        ...item,
+    }))
 }
 

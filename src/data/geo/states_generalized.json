@@ -13,6 +13,7 @@
             "properties": {
                 "STATE": "49",
                 "State": "UT",
+                "Name": "Utah",
                 "bbox": [
                     -114.0506,
                     36.999084,
@@ -67,6 +68,7 @@
             "properties": {
                 "STATE": "12",
                 "State": "FL",
+                "Name": "Florida",
                 "bbox": [
                     -87.624137,
                     24.546468,
@@ -717,6 +719,7 @@
             "properties": {
                 "STATE": "39",
                 "State": "OH",
+                "Name": "Ohio",
                 "bbox": [
                     -84.820157,
                     38.421809,
@@ -987,6 +990,7 @@
             "properties": {
                 "STATE": "33",
                 "State": "NH",
+                "Name": "New Hampshire",
                 "bbox": [
                     -72.556214,
                     42.69699,
@@ -1101,6 +1105,7 @@
             "properties": {
                 "STATE": "50",
                 "State": "VT",
+                "Name": "Vermont",
                 "bbox": [
                     -73.437429,
                     42.726853,
@@ -1215,6 +1220,7 @@
             "properties": {
                 "STATE": "11",
                 "State": "DC",
+                "Name": "Washington, D.C.",
                 "bbox": [
                     -77.1199,
                     38.8395,
@@ -1257,6 +1263,7 @@
             "properties": {
                 "STATE": "53",
                 "State": "WA",
+                "Name": "Washington",
                 "bbox": [
                     -124.733174,
                     45.543541,
@@ -1899,6 +1906,7 @@
             "properties": {
                 "STATE": "34",
                 "State": "NJ",
+                "Name": "New Jersey",
                 "bbox": [
                     -75.559446,
                     38.931194,
@@ -2009,6 +2017,7 @@
             "properties": {
                 "STATE": "31",
                 "State": "NE",
+                "Name": "Nebraska",
                 "bbox": [
                     -104.053249,
                     39.999998,
@@ -2143,6 +2152,7 @@
             "properties": {
                 "STATE": "45",
                 "State": "SC",
+                "Name": "South Carolina",
                 "bbox": [
                     -83.351293,
                     32.0346,
@@ -2289,6 +2299,7 @@
             "properties": {
                 "STATE": "30",
                 "State": "MT",
+                "Name": "Montana",
                 "bbox": [
                     -116.049193,
                     44.371038,
@@ -2443,6 +2454,7 @@
             "properties": {
                 "STATE": "05",
                 "State": "AR",
+                "Name": "Arkansas",
                 "bbox": [
                     -94.617919,
                     33.018443,
@@ -2633,6 +2645,7 @@
             "properties": {
                 "STATE": "28",
                 "State": "MS",
+                "Name": "Mississippi",
                 "bbox": [
                     -91.636942,
                     30.180897,
@@ -2971,6 +2984,7 @@
             "properties": {
                 "STATE": "16",
                 "State": "ID",
+                "Name": "Idaho",
                 "bbox": [
                     -117.214889,
                     41.998223,
@@ -3169,6 +3183,7 @@
             "properties": {
                 "STATE": "17",
                 "State": "IL",
+                "Name": "Illinois",
                 "bbox": [
                     -91.510322,
                     36.9822,
@@ -3371,6 +3386,7 @@
             "properties": {
                 "STATE": "22",
                 "State": "LA",
+                "Name": "Louisiana",
                 "bbox": [
                     -94.042964,
                     28.925011,
@@ -3821,6 +3837,7 @@
             "properties": {
                 "STATE": "13",
                 "State": "GA",
+                "Name": "Georgia",
                 "bbox": [
                     -85.605165,
                     30.362338,
@@ -3993,58 +4010,9 @@
         {
             "type": "Feature",
             "properties": {
-                "STATE": "46",
-                "State": null,
-                "bbox": [
-                    -103.001068,
-                    42.999356,
-                    -102.082486,
-                    43.700948
-                ]
-            },
-            "geometry": {
-                "type": "MultiPolygon",
-                "coordinates": [
-                    [
-                        [
-                            [
-                                -103.000785,
-                                43.476847
-                            ],
-                            [
-                                -103.001068,
-                                43.605799
-                            ],
-                            [
-                                -102.9025,
-                                43.674888
-                            ],
-                            [
-                                -102.139158,
-                                43.700948
-                            ],
-                            [
-                                -102.082486,
-                                42.999356
-                            ],
-                            [
-                                -103.000897,
-                                43.000474
-                            ],
-                            [
-                                -103.000785,
-                                43.476847
-                            ]
-                        ]
-                    ]
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
                 "STATE": "37",
                 "State": "NC",
+                "Name": "North Carolina",
                 "bbox": [
                     -84.321869,
                     33.844517,
@@ -4363,6 +4331,7 @@
             "properties": {
                 "STATE": "42",
                 "State": "PA",
+                "Name": "Pennsylvania",
                 "bbox": [
                     -80.519425,
                     39.721403,
@@ -4457,6 +4426,7 @@
             "properties": {
                 "STATE": "48",
                 "State": "TX",
+                "Name": "Texas",
                 "bbox": [
                     -106.627808,
                     25.856459,
@@ -5055,6 +5025,7 @@
             "properties": {
                 "STATE": "40",
                 "State": "OK",
+                "Name": "Oklahoma",
                 "bbox": [
                     -103.002434,
                     33.625586,
@@ -5213,6 +5184,7 @@
             "properties": {
                 "STATE": "01",
                 "State": "AL",
+                "Name": "Alabama",
                 "bbox": [
                     -88.468879,
                     30.221132,
@@ -5375,6 +5347,7 @@
             "properties": {
                 "STATE": "38",
                 "State": "ND",
+                "Name": "North Dakota",
                 "bbox": [
                     -104.048736,
                     45.935238,
@@ -5445,6 +5418,7 @@
             "properties": {
                 "STATE": "35",
                 "State": "NM",
+                "Name": "New Mexico",
                 "bbox": [
                     -109.050044,
                     31.332502,
@@ -5921,6 +5895,7 @@
             "properties": {
                 "STATE": "27",
                 "State": "MN",
+                "Name": "Minnesota",
                 "bbox": [
                     -97.234005,
                     43.500335,
@@ -6163,6 +6138,7 @@
             "properties": {
                 "STATE": "02",
                 "State": "AK",
+                "Name": "Alaska",
                 "bbox": [
                     -179.137239,
                     51.219862,
@@ -11925,6 +11901,7 @@
             "properties": {
                 "STATE": "21",
                 "State": "KY",
+                "Name": "Kentucky",
                 "bbox": [
                     -89.560344,
                     36.497129,
@@ -12207,6 +12184,7 @@
             "properties": {
                 "STATE": "51",
                 "State": "VA",
+                "Name": "Virginia",
                 "bbox": [
                     -83.675413,
                     36.550754,
@@ -12611,6 +12589,7 @@
             "properties": {
                 "STATE": "19",
                 "State": "IA",
+                "Name": "Iowa",
                 "bbox": [
                     -96.639704,
                     40.384929,
@@ -12805,6 +12784,7 @@
             "properties": {
                 "STATE": "25",
                 "State": "MA",
+                "Name": "Massachusetts",
                 "bbox": [
                     -73.508142,
                     41.242351,
@@ -13063,6 +13043,7 @@
             "properties": {
                 "STATE": "26",
                 "State": "MI",
+                "Name": "Michigan",
                 "bbox": [
                     -90.418136,
                     41.696089,
@@ -13725,6 +13706,7 @@
             "properties": {
                 "STATE": "44",
                 "State": "RI",
+                "Name": "Rhode Island",
                 "bbox": [
                     -71.862772,
                     41.146932,
@@ -13947,6 +13929,7 @@
             "properties": {
                 "STATE": "06",
                 "State": "CA",
+                "Name": "California",
                 "bbox": [
                     -124.408601,
                     32.534156,
@@ -14505,6 +14488,7 @@
             "properties": {
                 "STATE": "24",
                 "State": "MD",
+                "Name": "Maryland",
                 "bbox": [
                     -79.486873,
                     37.911717,
@@ -14831,6 +14815,7 @@
             "properties": {
                 "STATE": "47",
                 "State": "TN",
+                "Name": "Tennessee",
                 "bbox": [
                     -90.309877,
                     34.988408,
@@ -15013,6 +14998,7 @@
             "properties": {
                 "STATE": "08",
                 "State": "CO",
+                "Name": "Colorado",
                 "bbox": [
                     -109.050076,
                     36.993083,
@@ -15101,6 +15087,7 @@
             "properties": {
                 "STATE": "54",
                 "State": "WV",
+                "Name": "West Virginia",
                 "bbox": [
                     -82.636466,
                     37.206663,
@@ -15339,6 +15326,7 @@
             "properties": {
                 "STATE": "41",
                 "State": "OR",
+                "Name": "Oregon",
                 "bbox": [
                     -124.552441,
                     42.000252,
@@ -15513,6 +15501,7 @@
             "properties": {
                 "STATE": "55",
                 "State": "WI",
+                "Name": "Wisconsin",
                 "bbox": [
                     -92.883749,
                     42.49192,
@@ -15875,6 +15864,7 @@
             "properties": {
                 "STATE": "56",
                 "State": "WY",
+                "Name": "Wyoming",
                 "bbox": [
                     -111.046723,
                     40.997959,
@@ -15921,6 +15911,7 @@
             "properties": {
                 "STATE": "18",
                 "State": "IN",
+                "Name": "Indiana",
                 "bbox": [
                     -88.071449,
                     37.776843,
@@ -16087,6 +16078,7 @@
             "properties": {
                 "STATE": "09",
                 "State": "CT",
+                "Name": "Connecticut",
                 "bbox": [
                     -73.727775,
                     40.985171,
@@ -16149,6 +16141,7 @@
             "properties": {
                 "STATE": "20",
                 "State": "KS",
+                "Name": "Kansas",
                 "bbox": [
                     -102.051744,
                     36.993125,
@@ -16215,6 +16208,7 @@
             "properties": {
                 "STATE": "23",
                 "State": "ME",
+                "Name": "Maine",
                 "bbox": [
                     -71.084334,
                     43.059621,
@@ -17931,6 +17925,7 @@
             "properties": {
                 "STATE": "15",
                 "State": "HI",
+                "Name": "Hawaii",
                 "bbox": [
                     -160.555771,
                     18.917466,
@@ -18249,6 +18244,7 @@
             "properties": {
                 "STATE": "32",
                 "State": "NV",
+                "Name": "Nevada",
                 "bbox": [
                     -120.001014,
                     35.002085,
@@ -18315,6 +18311,7 @@
             "properties": {
                 "STATE": "29",
                 "State": "MO",
+                "Name": "Missouri",
                 "bbox": [
                     -95.765645,
                     35.995812,
@@ -18509,6 +18506,7 @@
             "properties": {
                 "STATE": "04",
                 "State": "AZ",
+                "Name": "Arizona",
                 "bbox": [
                     -114.813613,
                     31.332502,
@@ -18623,6 +18621,7 @@
             "properties": {
                 "STATE": "46",
                 "State": "SD",
+                "Name": "South Dakota",
                 "bbox": [
                     -104.053127,
                     42.489495,
@@ -18753,6 +18752,7 @@
             "properties": {
                 "STATE": "10",
                 "State": "DE",
+                "Name": "Delaware",
                 "bbox": [
                     -75.788359,
                     38.451263,
@@ -18859,6 +18859,7 @@
             "properties": {
                 "STATE": "36",
                 "State": "NY",
+                "Name": "New York",
                 "bbox": [
                     -79.761951,
                     40.509448,

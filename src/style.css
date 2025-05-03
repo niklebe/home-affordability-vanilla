@@ -30,7 +30,7 @@ h1 {
 
 .container {
   margin: 0 auto;
-  width: min(768px, calc(100vw - 4rem));
+  width: min(1200px, calc(100vw - 4rem));
 }
 
 .logo {
@@ -75,4 +75,31 @@ tr:hover {
   max-height: 1000px;
   width: 100%;
   margin-bottom: 3rem;
+}
+
+.popup-content {
+  color: gray;
+  padding: 0.5rem;
+  font-size: large;
+}
+
+.popup-title {
+  margin-top: 0;
+  font-size: larger;
+  margin-bottom: 1rem;
+}
+
+.popup-list {
+  padding: 0;
+  list-style-type: none;
+  /* Remove bullets */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.popup-list>li {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
 }
