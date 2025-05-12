@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/papaparse": "^5.3.16",
     "typescript": "~5.7.2",
     "vite": "^6.2.0"
   },
   "dependencies": {
     "@turf/center-of-mass": "^7.2.0",
     "geobuckets": "^0.0.3",
-    "mapbox-gl": "^3.11.0"
+    "mapbox-gl": "^3.11.0",
+    "papaparse": "^5.5.2"
   }
 }

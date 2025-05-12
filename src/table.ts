@@ -1,4 +1,8 @@
-export function populateTableFromData<T extends Record<string, any>>(table: HTMLTableElement, data: T[]): void {
+export function populateTableFromData<T extends Record<string, any>>(
+    table: HTMLTableElement,
+    data: T[],
+    columns: string[]
+): void {
     // Clear existing table content
     table.innerHTML = '';
 
@@ -7,7 +11,8 @@ export function populateTableFromData<T extends Record<string, any>>(table: HTML
     // Create table header
     const thead = table.createTHead();
     const headerRow = thead.insertRow();
-    const keys = Object.keys(data[0]);
+    // const keys = Object.keys(data[0]);
+    const keys = columns;
 
     for (const key of keys) {
         const th = document.createElement('th');
@@ -39,6 +44,7 @@ export function populateTableFromData<T extends Record<string, any>>(table: HTML
 export function setupTable<T extends Record<string, any>>(
     tableId: string,
     data: T[],
+    columns: string[],
     initialPageSize: number = 10
 ) {
     const table = document.getElementById(tableId) as HTMLTableElement | undefined;
@@ -54,7 +60,7 @@ export function setupTable<T extends Record<string, any>>(
         const start = (currentPage - 1) * pageSize;
         const end = start + pageSize;
         const pageData = data.slice(start, end);
-        populateTableFromData(table, pageData);
+        populateTableFromData(table, pageData, columns);
         renderPaginationControls();
     };
 

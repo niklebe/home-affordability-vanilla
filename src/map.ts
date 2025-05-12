@@ -1,5 +1,5 @@
-import counties from "./data/geo/counties_fips_generalized.json"
-import states from "./data/geo/states_generalized.json"
+import counties from "./data/geo/counties_0.05.json"
+import states from "./data/geo/states_0.05.json"
 
 import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONFeature, GeoJSONSource, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -38,14 +38,23 @@ const stepsFromValues = async (
 
 export async function setupMap(data: { [key: string]: unknown }[], visualizationVariables: string[], rankVariable: string) {
     // Add visualized column data to geo-features
+    console.log(counties.features.length, data.length)
     const countiesWithData = {
         type: 'FeatureCollection',
         features: counties.features.map((f: any) => {
-            if (!f?.properties?.FIPS) return null;
+            if (!f?.properties?.GEOID) {
+                console.log("No GEOID")
+                return null
+            };
 
-            const match = data.find(d => d.FIPS === f.properties.FIPS)
+            const match = data.find(d => {
+                return Number(d.GEOID) == Number(f.properties.GEOID)
+            })
 
-            if (!match) return null;
+            if (!match) {
+                // console.log("no match", f.properties.GEOID)
+                return null
+            };
 
             for (const col of visualizationVariables) {
                 f.properties[col] = match[col]
@@ -56,7 +65,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
     } as GeoJSON.FeatureCollection
 
     const getTop3CountiesInState = (state: string) => {
-        const countiesInState = countiesWithData.features.filter(c => c.properties?.STATE == state);
+        const countiesInState = countiesWithData.features.filter(c => c.properties?.STATEFP == state);
         return countiesInState.sort((a, b) => {
             if (!a?.properties?.Rank || !b?.properties?.Rank) return 0;
             return a.properties.Rank - b.properties.Rank
@@ -66,8 +75,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
     // Pre-generate natural breaks values for every visualization column
     const visualizationSteps = {} as { [key: string]: number[] };
     for (const col of visualizationVariables) {
-        const values = data.map(x => x[col]).filter(x => typeof x === "number");
-        const colSteps = await stepsFromValues(values)
+        const values = data.map(x => x[col]).filter(x => (x && typeof x === "number"));
+        const colSteps = await stepsFromValues(values as number[])
         visualizationSteps[col] = colSteps
     }
 
@@ -117,7 +126,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
 
     function countiesToTop10() {
         let candidateCounties = countiesWithData.features.filter(county =>
-            (selectedState ? county.properties!.STATE === selectedState.properties?.STATE : true)
+            (selectedState ? county.properties!.STATEFP === selectedState.properties?.STATEFP : true)
             &&
             county?.properties?.[selectedVisualizationVariable]
         )
@@ -166,12 +175,12 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         map.setFeatureState(state, { select: true });
 
         // Fit map to selected state
-        if (state.properties?.bbox) {
-            const bounds = (Array.isArray(state.properties.bbox) ? state.properties.bbox : JSON.parse(state.properties.bbox)) as [number, number, number, number]
+        if (state.properties?.BBOX) {
+            const bounds = (Array.isArray(state.properties.BBOX) ? state.properties.BBOX : JSON.parse(state.properties.BBOX)) as [number, number, number, number]
             map.fitBounds(bounds, { padding: 50 })
         }
 
-        const stateNegativeFilterExpression = ["!=", ["get", "STATE"], selectedState.properties?.STATE];
+        const stateNegativeFilterExpression = ["!=", ["get", "STATEFP"], selectedState.properties?.STATEFP];
         map.setFilter("state-negative-layer", stateNegativeFilterExpression)
 
         // Reset top 10
@@ -186,7 +195,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             map.setFeatureState(selectedState, { select: false });
 
             // Remove hover to all state counties
-            const stateFilterExpression = ["==", ["get", "STATE"], selectedState.properties?.STATE!];
+            const stateFilterExpression = ["==", ["get", "STATEFP"], selectedState.properties?.STATEFP!];
             const stateCounties = map.querySourceFeatures("county-source", { filter: stateFilterExpression })
             stateCounties.forEach(feature => {
                 map.setFeatureState({ id: feature.id, source: "county-source" } as FeatureSelector, { hover: false });
@@ -221,8 +230,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         map.removeInteraction('state-click');
         map.removeInteraction('county-click');
 
-        const state = selectedState?.properties?.STATE;
-        const stateFilterExpression = ["==", ["get", "STATE"], state];
+        const state = selectedState?.properties?.STATEFP;
+        const stateFilterExpression = ["==", ["get", "STATEFP"], state];
 
         // Hovering over a county feature will highlight it
         map.addInteraction('county-mouseenter', {
@@ -236,14 +245,14 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
 
                 // Add county popup
                 const content = document.createElement("div")
-                content.classList = "popup-content"
+                content.classList.add("popup-content")
 
                 const title = document.createElement("strong")
-                title.classList = "popup-title"
-                const state = states.features.find(s => s.properties.STATE == feature.properties.STATE)
-                title.textContent = `${feature.properties.NAME}${state ? ", " + state.properties.State : ""}`;
+                title.classList.add("popup-title")
+                const state = states.features.find(s => s.properties.STATEFP == feature.properties.STATEFP)
+                title.textContent = `${feature.properties.NAME}${state ? ", " + state.properties.ABBR : ""}`;
                 const list = document.createElement("ul")
-                list.classList = "popup-list"
+                list.classList.add("popup-list")
                 for (const col of visualizationVariables) {
                     const data = document.createElement("li")
                     const dataTitle = document.createElement("span")
@@ -320,19 +329,19 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
 
                 // Add state popup
                 const content = document.createElement("div")
-                content.classList = "popup-content"
+                content.classList.add("popup-content")
 
                 const title = document.createElement("strong")
-                title.classList = "popup-title"
-                title.textContent = `${feature.properties.Name}`;
+                title.classList.add("popup-title")
+                title.textContent = `${feature.properties.NAME}`;
                 const subtitle = document.createElement("p")
                 subtitle.textContent = `Top counties in ${rankVariable}`
                 const subtitle2 = document.createElement("p")
                 subtitle2.textContent = `(National rank)`
                 const list = document.createElement("ul")
-                list.classList = "popup-list"
+                list.classList.add("popup-list")
 
-                const counties = getTop3CountiesInState(feature.properties.STATE);
+                const counties = getTop3CountiesInState(feature.properties.STATEFP);
 
                 counties.forEach((county, index) => {
                     const data = document.createElement("li")
@@ -593,11 +602,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         document.addEventListener("ca-table-county-click", (event) => {
             const item = (event as CustomEvent).detail;
 
-            console.log(item)
-
             // const feature = map.querySourceFeatures("state-source", { filter: ["==", ["get", "State"], item.State] })?.[0]
-            const feature = states.features.find(s => s.properties.State == item.State);
-            console.log(feature)
+            const feature = states.features.find(s => s.properties.STATEFP == item.STATEFP);
 
             if (feature) focusState(feature as unknown as GeoJSONFeature);
         })

@@ -11,11 +11,14 @@ const visualizationVariables = ["Variable A", "Variable B", "Variable C", "Varia
 // Has to be one of visualizationVariables
 const rankVariable = "Variable A"
 
+// Change this to control which CSV columns appear in the table
+const tableColumns = ["NAME", "STATE", ...visualizationVariables]
+
 const data = parseCsv(csvData, visualizationVariables, rankVariable)
 
 setupSegmentedControl("visualization-control", visualizationVariables)
 
 setupMap(data, visualizationVariables, rankVariable)
 
-setupTable("visualization-table", data)
+setupTable("visualization-table", data, tableColumns)
 
