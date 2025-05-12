@@ -1,7 +1,7 @@
 import counties from "./data/geo/counties_fips_generalized.json"
 import states from "./data/geo/states_generalized.json"
 
-import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONSource, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
+import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONFeature, GeoJSONSource, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 import 'mapbox-gl/dist/mapbox-gl.css';
 // @ts-expect-error no types
 import { jenksBuckets } from "geobuckets";
@@ -81,8 +81,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
     });
 
     let selectedVisualizationVariable = visualizationVariables[0];
-    let selectedState: TargetFeature | undefined;
-    const metricTopName = () => `Top10 -${selectedState ? ` ${selectedState.properties.State}-` : ''} ${selectedVisualizationVariable}`
+    let selectedState: TargetFeature | GeoJSONFeature | undefined;
+    const metricTopName = () => `Top10 -${selectedState ? ` ${selectedState.properties?.State}-` : ''} ${selectedVisualizationVariable}`
 
     function getCountyColorExpression() {
         return [
@@ -117,7 +117,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
 
     function countiesToTop10() {
         let candidateCounties = countiesWithData.features.filter(county =>
-            (selectedState ? county.properties!.STATE === selectedState.properties.STATE : true)
+            (selectedState ? county.properties!.STATE === selectedState.properties?.STATE : true)
             &&
             county?.properties?.[selectedVisualizationVariable]
         )
@@ -153,7 +153,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
     }
 
 
-    function focusState(state: TargetFeature) {
+    function focusState(state: TargetFeature | GeoJSONFeature) {
+        map.fire('close-all-popups');
 
         // Clean previous select
         if (selectedState) {
@@ -165,12 +166,12 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         map.setFeatureState(state, { select: true });
 
         // Fit map to selected state
-        if (state.properties.bbox) {
-            const bounds = JSON.parse(state.properties.bbox) as [number, number, number, number]
+        if (state.properties?.bbox) {
+            const bounds = (Array.isArray(state.properties.bbox) ? state.properties.bbox : JSON.parse(state.properties.bbox)) as [number, number, number, number]
             map.fitBounds(bounds, { padding: 50 })
         }
 
-        const stateNegativeFilterExpression = ["!=", ["get", "STATE"], selectedState?.properties.STATE];
+        const stateNegativeFilterExpression = ["!=", ["get", "STATE"], selectedState.properties?.STATE];
         map.setFilter("state-negative-layer", stateNegativeFilterExpression)
 
         // Reset top 10
@@ -185,7 +186,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             map.setFeatureState(selectedState, { select: false });
 
             // Remove hover to all state counties
-            const stateFilterExpression = ["==", ["get", "STATE"], selectedState.properties.STATE!];
+            const stateFilterExpression = ["==", ["get", "STATE"], selectedState.properties?.STATE!];
             const stateCounties = map.querySourceFeatures("county-source", { filter: stateFilterExpression })
             stateCounties.forEach(feature => {
                 map.setFeatureState({ id: feature.id, source: "county-source" } as FeatureSelector, { hover: false });
@@ -220,7 +221,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         map.removeInteraction('state-click');
         map.removeInteraction('county-click');
 
-        const state = selectedState?.properties.STATE;
+        const state = selectedState?.properties?.STATE;
         const stateFilterExpression = ["==", ["get", "STATE"], state];
 
         // Hovering over a county feature will highlight it
@@ -402,13 +403,13 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         map.addInteraction('background-enter', {
             type: 'mouseenter',
             handler: () => {
-                map.fire("closeAllPopups")
+                map.fire("close-all-popups")
             }
         });
     }
 
     function openPopup(longitude: number, latitude: number, content: HTMLDivElement) {
-        map.fire("closeAllPopups")
+        map.fire("close-all-popups")
         const placeholder = document.createElement('div');
         placeholder.style.pointerEvents = "none";
         placeholder.style.maxWidth = "calc(100vw - 48px)";
@@ -426,7 +427,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             .setDOMContent(placeholder)
             .addTo(map) as Popup | undefined;
 
-        map.once("closeAllPopups", () => {
+        map.once("close-all-popups", () => {
             popup?.remove();
             popup = undefined;
         })
@@ -581,11 +582,24 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         handleBlurInteractions();
 
         // Set up event listener for coloring the map and hanging top 10, when control changes visualization variable
-        document.addEventListener("visualizationColumnSelected", (event) => {
+        document.addEventListener("visualization-column-selected", (event) => {
             const newVariable = (event as CustomEvent).detail;
             selectedVisualizationVariable = newVariable;
             colorCountiesByColumn()
             setTop10()
+        })
+
+        // Set up event listener for focusing state when a table row is selected
+        document.addEventListener("ca-table-county-click", (event) => {
+            const item = (event as CustomEvent).detail;
+
+            console.log(item)
+
+            // const feature = map.querySourceFeatures("state-source", { filter: ["==", ["get", "State"], item.State] })?.[0]
+            const feature = states.features.find(s => s.properties.State == item.State);
+            console.log(feature)
+
+            if (feature) focusState(feature as unknown as GeoJSONFeature);
         })
     })
 

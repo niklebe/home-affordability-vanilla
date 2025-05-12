@@ -1,4 +1,3 @@
-
 export function populateTableFromData<T extends Record<string, any>>(table: HTMLTableElement, data: T[]): void {
     // Clear existing table content
     table.innerHTML = '';
@@ -21,13 +20,21 @@ export function populateTableFromData<T extends Record<string, any>>(table: HTML
 
     for (const item of data) {
         const row = tbody.insertRow();
+
+        row.addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent("ca-table-county-click", {
+                detail: {
+                    ...item
+                }
+            }))
+        });
+
         for (const key of keys) {
             const cell = row.insertCell();
             cell.textContent = item[key]?.toString() ?? '';
         }
     }
 }
-
 
 export function setupTable<T extends Record<string, any>>(
     tableId: string,

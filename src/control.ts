@@ -1,6 +1,6 @@
 type Variable = string;
 
-export function setupSegmentedControl(containerId: string, variables: Variable[], eventName = 'visualizationColumnSelected') {
+export function setupSegmentedControl(containerId: string, variables: Variable[], eventName = 'visualization-column-selected') {
     const container = document.getElementById(containerId);
     if (!container) {
         console.error(`Container with ID "${containerId}" not found.`);
