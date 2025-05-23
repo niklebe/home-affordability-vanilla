@@ -1,0 +1,121 @@
+/* src/rebrand/ca_sg_pagination/scss/styles.scss */
+.pgn {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 1.5rem 0 0;
+  text-align: center;
+  width: 100%;
+}
+.pgn--pad-bt {
+  padding: 1.5rem 0;
+}
+@media (min-width: 768px) {
+  .pgn {
+    padding: 1.5rem 0;
+  }
+}
+.pgn__divider {
+  order: 2;
+  color: #e4e8ec;
+  border-style: solid;
+  border-bottom: none;
+  width: 100%;
+  margin: 1.5625rem 0;
+}
+@media (min-width: 768px) {
+  .pgn__divider {
+    display: none;
+  }
+}
+.pgn__num-wrp {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  order: 2;
+  text-align: center;
+}
+.pgn__btn--num {
+  background-color: transparent;
+  color: #313339;
+}
+.pgn__btn--prev,
+.pgn__btn--next,
+.pgn__btn--num {
+  margin: 0.125rem;
+}
+@media (min-width: 768px) {
+  .pgn__btn--prev,
+  .pgn__btn--next,
+  .pgn__btn--num {
+    margin: 0.5rem;
+  }
+}
+@media (min-width: 992px) {
+  .pgn__btn--prev,
+  .pgn__btn--next,
+  .pgn__btn--num {
+    margin: 0.7163rem;
+  }
+}
+.pgn__btn--last,
+.pgn__btn--first {
+  order: 3;
+  margin: 0 1.4087rem;
+}
+@media (min-width: 768px) {
+  .pgn__btn--last,
+  .pgn__btn--first {
+    order: 1;
+    margin: 0.5rem;
+  }
+}
+@media (min-width: 992px) {
+  .pgn__btn--last,
+  .pgn__btn--first {
+    margin: 0.7163rem;
+  }
+}
+.pgn__btn--last {
+  order: 4;
+}
+.pgn__btn.pgn__btn--act,
+.pgn__btn--num:hover,
+.pgn__btn--num:focus,
+.pgn__btn--num:active {
+  color: #313339;
+  background-color: #eaf1fa;
+}
+.pgn--stk {
+  background: #fff;
+  bottom: 0;
+  position: sticky;
+  z-index: 7000;
+}
+.pgn--stk::before {
+  box-shadow: 0 -5px 6px -2px rgba(0, 0, 0, 0.15);
+  content: "";
+  display: block;
+  height: 10px;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.js-pagination--loading {
+  pointer-events: none;
+  position: relative;
+}
+.js-pagination--loading > * {
+  opacity: 0.4;
+}
+.js-pagination--loading .loader {
+  display: block;
+  opacity: 1;
+}
+.js-pagination__error {
+  color: #9a2302;
+  font-weight: 600;
+  font-size: 1rem;
+}
+/*# sourceMappingURL=/static/css/ca_sg_pagination.css.map */

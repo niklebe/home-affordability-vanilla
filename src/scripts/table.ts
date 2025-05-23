@@ -14,11 +14,13 @@ export function populateTableFromData<T extends Record<string, any>>(
     // const keys = Object.keys(data[0]);
     const keys = columns;
 
-    for (const key of keys) {
+    keys.forEach((key, index) => {
         const th = document.createElement('th');
         th.textContent = key;
+        th.scope = "column"
+        th.classList.add("ca-tb__min-w", index == 0 ? "ca-tb__stck" : "js-scroll-step")
         headerRow.appendChild(th);
-    }
+    })
 
     // Create table body
     const tbody = table.createTBody();
@@ -37,12 +39,15 @@ export function populateTableFromData<T extends Record<string, any>>(
         for (const key of keys) {
             const cell = row.insertCell();
             cell.textContent = item[key]?.toString() ?? '';
+            cell.classList.add("ca-tb__stck")
+            cell.setAttribute("data-label", key)
         }
     }
 }
 
 export function setupTable<T extends Record<string, any>>(
     tableId: string,
+    paginationContainerId: string,
     data: T[],
     columns: string[],
     initialPageSize: number = 10
@@ -54,7 +59,6 @@ export function setupTable<T extends Record<string, any>>(
     }
     let currentPage = 1;
     let pageSize = initialPageSize;
-    const paginationContainerId = 'paginationControls';
 
     const renderPage = () => {
         const start = (currentPage - 1) * pageSize;

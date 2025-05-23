@@ -5,21 +5,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home Affordability Visualization</title>
-  <link rel="stylesheet" href="./src/style.css">
+  <link rel="stylesheet" href="./src/styles/preflight.css">
+  <link rel="stylesheet" href="./src/styles/ca_sg_typography.css">
+  <link rel="stylesheet" href="./src/styles/ca_sg_rich_content.css">
+  <link rel="stylesheet" href="./src/styles/ca_sg_forms.css">
+  <link rel="stylesheet" href="./src/styles/ca_sg_scrollable_table.css">
+  <link rel="stylesheet" href="./src/styles/ca_sg_carousel_paginator.css">
+  <link rel="stylesheet" href="./src/styles/main.css">
 </head>
 
 <body>
-  <div class="container">
-    <h1>Home Affordability</h1>
+  <div id="container">
     <div id="map"></div>
 
-    <div id="visualization-control" class="segmented-control"></div>
+    <!-- <div class="ca-form__group js-form-group js-floating-label-input js-choices">
+      <label class="ca-form__label">Name</label>
+      <div class="ca-form__select-wrapper">
+        <select id="visualization-control" name="custom_select" class="ca-form__select">
+        </select>
+      </div>
+      <ul class="ca-form__error js-errorlist"></ul>
+    </div> -->
 
-    <table id="visualization-table">
-    </table>
+    <div id="control-container">
+      <label>Color by</label>
+      <div>
+        <select id="visualization-control">
+        </select>
+      </div>
+    </div>
+
+    <section class="ca-scrll-tb ca-scrll-tb--fxd-hdr">
+      <div class="js-scroll-carousel" id="carousel_table_5">
+        <div id="table-wrapper" class="js-scroll-step-container js-step-container ca-scrll-tb__wpr"
+          data-carousel-per-page>
+          <table id="visualization-table" class="ca-tb ca-tb--crsstb ca-tb--fix">
+          </table>
+        </div>
+      </div>
+      <div class="ca-carousel-paginator ca-carousel-paginator--wth-arrws js-carousel-paginator-wrapper">
+        <button class="ca-carousel-paginator__arrw" data-carousel-id="carousel_table_1" data-carousel-action="prev">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+            <path class="ca-icon__colored-stroke" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="2"
+              d="M6 24l12-12 12 12" data-name="Live Stroke"></path>
+          </svg>
+        </button>
+        <div class="ca-carousel-paginator__dt-wpr" data-carousel-paginator-id="carousel_table_1">
+          <span class="ca-carousel-paginator__dt js-carousel-paginator" data-carousel-page="0"
+            data-carousel-active-page="true"></span>
+        </div>
+        <button class="ca-carousel-paginator__arrw" data-carousel-id="carousel_table_1" data-carousel-action="next">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+            <path class="ca-icon__colored-stroke" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="2"
+              d="M30 12L18 24 6 12" data-name="Live Stroke"></path>
+          </svg>
+        </button>
+      </div>
+    </section>
+    <div id="pagination-container">
+      <div id="visualization-table-pagination"></div>
+    </div>
 
   </div>
-  <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="/src/scripts/main.ts"></script>
+  <script type="module" src="/src/scripts/ca_sg_carousel_paginator.js"></script>
+  <script type="module" src="/src/scripts/ca_sg_scrollable_carousel.js"></script>
+  <script type="module" src="/src/scripts/ca_styleguide_carousel_binder.js"></script>
+  <!-- <script type="module" src="/src/scripts/ca_sg_dropdown.js"></script> -->
 </body>
 
 </html>

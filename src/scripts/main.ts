@@ -1,4 +1,4 @@
-import csvData from "./data/statistics/data.csv?raw"
+import csvData from "../data/statistics/data.csv?raw"
 import { setupMap } from './map.ts'
 import { setupSegmentedControl } from './control.ts'
 import { parseCsv } from './parse.ts'
@@ -24,5 +24,5 @@ setupSegmentedControl("visualization-control", visualizationVariables)
 
 setupMap(data, visualizationVariables, rankVariable)
 
-setupTable("visualization-table", data, tableColumns)
+setupTable("visualization-table", "visualization-table-pagination", data, tableColumns)
 

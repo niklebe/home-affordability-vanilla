@@ -1,5 +1,5 @@
-import counties from "./data/geo/counties_0.05.json"
-import states from "./data/geo/states_0.05.json"
+import counties from "../data/geo/counties_0.05.json"
+import states from "../data/geo/states_0.05.json"
 
 import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONFeature, GeoJSONSource, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -38,7 +38,6 @@ const stepsFromValues = async (
 
 export async function setupMap(data: { [key: string]: unknown }[], visualizationVariables: string[], rankVariable: string) {
     // Add visualized column data to geo-features
-    console.log(counties.features.length, data.length)
     const countiesWithData = {
         type: 'FeatureCollection',
         features: counties.features.map((f: any) => {
@@ -163,31 +162,39 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
 
 
     function focusState(state: TargetFeature | GeoJSONFeature) {
-        map.fire('close-all-popups');
+        try {
 
-        // Clean previous select
-        if (selectedState) {
-            map.setFeatureState(selectedState, { select: false });
+            map.fire('close-all-popups');
+
+            // Clean previous select
+            if (selectedState) {
+                map.setFeatureState({ ...selectedState, id: selectedState.id, source: "state-source" } as TargetFeature, { select: false });
+            }
+
+            if (!state) return;
+
+            // Select new
+            selectedState = state;
+            map.setFeatureState({ ...state, id: state.id, source: "state-source" } as TargetFeature, { select: true });
+
+            // Fit map to selected state
+            if (state.properties?.BBOX) {
+                const bounds = (Array.isArray(state.properties.BBOX) ? state.properties.BBOX : JSON.parse(state.properties.BBOX)) as [number, number, number, number]
+                map.fitBounds(bounds, { padding: 50 })
+            }
+
+            const stateNegativeFilterExpression = ["!=", ["get", "STATEFP"], selectedState.properties?.STATEFP];
+            map.setFilter("state-negative-layer", stateNegativeFilterExpression)
+
+            // Reset top 10
+            setTop10()
+
+            // Register interaction listeners
+            handleFocusInteractions()
+
+        } catch (error) {
+            console.log(error)
         }
-
-        // Select new
-        selectedState = state;
-        map.setFeatureState(state, { select: true });
-
-        // Fit map to selected state
-        if (state.properties?.BBOX) {
-            const bounds = (Array.isArray(state.properties.BBOX) ? state.properties.BBOX : JSON.parse(state.properties.BBOX)) as [number, number, number, number]
-            map.fitBounds(bounds, { padding: 50 })
-        }
-
-        const stateNegativeFilterExpression = ["!=", ["get", "STATEFP"], selectedState.properties?.STATEFP];
-        map.setFilter("state-negative-layer", stateNegativeFilterExpression)
-
-        // Reset top 10
-        setTop10()
-
-        // Register interaction listeners
-        handleFocusInteractions()
     }
 
     function blurState() {
@@ -247,8 +254,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
                 const content = document.createElement("div")
                 content.classList.add("popup-content")
 
-                const title = document.createElement("strong")
-                title.classList.add("popup-title")
+                const title = document.createElement("h2")
+                title.classList.add("popup-title", "ca-h--base-fnt-fmly")
                 const state = states.features.find(s => s.properties.STATEFP == feature.properties.STATEFP)
                 title.textContent = `${feature.properties.NAME}${state ? ", " + state.properties.ABBR : ""}`;
                 const list = document.createElement("ul")
@@ -331,15 +338,15 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
                 const content = document.createElement("div")
                 content.classList.add("popup-content")
 
-                const title = document.createElement("strong")
-                title.classList.add("popup-title")
+                const title = document.createElement("h2")
+                title.classList.add("popup-title", "ca-h--base-fnt-fmly")
                 title.textContent = `${feature.properties.NAME}`;
                 const subtitle = document.createElement("p")
                 subtitle.textContent = `Top counties in ${rankVariable}`
-                const subtitle2 = document.createElement("p")
-                subtitle2.textContent = `(National rank)`
                 const list = document.createElement("ul")
                 list.classList.add("popup-list")
+                const subtitle2 = document.createElement("p")
+                subtitle2.textContent = `(National rank)`
 
                 const counties = getTop3CountiesInState(feature.properties.STATEFP);
 
@@ -435,6 +442,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             .setLngLat([longitude, latitude])
             .setDOMContent(placeholder)
             .addTo(map) as Popup | undefined;
+
+        popup?._content?.classList.add('no-pointer-events');
 
         map.once("close-all-popups", () => {
             popup?.remove();
@@ -583,8 +592,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         });
 
         //  Some default layers not needed
-        map.removeLayer("continent-label");
-        map.removeLayer("country-label");
+        // map.removeLayer("continent-label");
+        // map.removeLayer("country-label");
 
         // Interactions at start up
         handleCommonInteractions();
@@ -602,8 +611,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         document.addEventListener("ca-table-county-click", (event) => {
             const item = (event as CustomEvent).detail;
 
-            // const feature = map.querySourceFeatures("state-source", { filter: ["==", ["get", "State"], item.State] })?.[0]
-            const feature = states.features.find(s => s.properties.STATEFP == item.STATEFP);
+            const feature = map.querySourceFeatures("state-source", { filter: ["==", ["get", "STATEFP"], item.STATEFP] })?.[0]
+            // const feature = states.features.find(s => s.properties.STATEFP == item.STATEFP);
 
             if (feature) focusState(feature as unknown as GeoJSONFeature);
         })
