@@ -35,8 +35,9 @@ const stepsFromValues = async (
     return stepValues as number[]
 };
 
-// This is used to close popups when no state is hovered
+// These are used to close popups when no features are hovered
 let lastStateMouseEnter: number;
+let lastCountyMouseEnter: number;
 
 export async function setupMap(data: { [key: string]: unknown }[], visualizationVariables: string[], rankVariable: string) {
     // Add visualized column data to geo-features
@@ -251,6 +252,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             handler: ({ feature }) => {
                 if (!feature || !selectedState) return
 
+                lastCountyMouseEnter = Date.now()
+
                 map.setFeatureState(feature, { hover: true });
 
                 // Add county popup
@@ -292,6 +295,12 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             filter: stateFilterExpression,
             handler: ({ feature }) => {
                 if (!feature || !selectedState) return;
+
+                if (lastCountyMouseEnter) {
+                    const timeFromLastMouseEnter = Date.now() - lastCountyMouseEnter;
+                    if (timeFromLastMouseEnter > 20) map.fire("close-all-popups")
+                }
+
                 map.setFeatureState(feature, { hover: false });
                 map.getCanvas().style.cursor = '';
             }
