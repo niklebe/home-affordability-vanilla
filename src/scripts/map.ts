@@ -35,6 +35,8 @@ const stepsFromValues = async (
     return stepValues as number[]
 };
 
+// This is used to close popups when no state is hovered
+let lastStateMouseEnter: number;
 
 export async function setupMap(data: { [key: string]: unknown }[], visualizationVariables: string[], rankVariable: string) {
     // Add visualized column data to geo-features
@@ -81,7 +83,8 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
 
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/standard',
+        style: 'mapbox://styles/mapbox/standard?optimize=true',
+        projection: 'mercator',
         bounds: usaBbox,
         fitBoundsOptions: {
             padding: 50
@@ -314,6 +317,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         });
     }
 
+
     function handleBlurInteractions() {
         // Previous interactions are removed because of different filters
         map.removeInteraction('county-mouseenter');
@@ -328,8 +332,9 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             type: 'mouseenter',
             target: { layerId: 'state-layer' },
             handler: ({ feature }) => {
-
                 if (!feature || (selectedState && selectedState.id === feature.id)) return
+
+                lastStateMouseEnter = Date.now()
 
                 map.setFeatureState(feature, { hover: true });
                 map.getCanvas().style.cursor = 'pointer';
@@ -380,7 +385,14 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             type: 'mouseleave',
             target: { layerId: 'state-layer' },
             handler: ({ feature }) => {
+
                 if (!feature) return
+
+                if (lastStateMouseEnter) {
+                    const timeFromLastMouseEnter = Date.now() - lastStateMouseEnter;
+                    if (timeFromLastMouseEnter > 20) map.fire("close-all-popups")
+                }
+
                 map.setFeatureState(feature, { hover: false });
                 map.getCanvas().style.cursor = '';
             }
@@ -404,6 +416,11 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
                 focusState(feature)
             }
         });
+
+        // Mouse exits map canvas
+        map.on("mouseout", () => {
+            map.fire("close-all-popups")
+        })
     }
 
     function handleCommonInteractions() {
