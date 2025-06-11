@@ -1,10 +1,4 @@
-import csvData from "../data/statistics/data.csv?raw"
-import { setupMap } from './map.ts'
-import { setupSegmentedControl } from './control.ts'
-import { parseCsv } from './parse.ts'
-import { setupTable } from "./table.ts"
-
-// -------- SETTINGS -----------------------------------------------
+// -------- SETTINGS --------------------------------------------
 
 // Change this to set your CSV columns to use for visualization
 const visualizationVariables = ["Variable A", "Variable B", "Variable C", "Variable D", "Variable E"]
@@ -16,13 +10,32 @@ const rankVariable = "Variable A"
 // Change this to control which CSV columns appear in the table
 const tableColumns = ["NAME", "STATE", ...visualizationVariables]
 
-// ------------------------------------------------------------------
+// -------- SETUP -----------------------------------------------
 
-const data = parseCsv(csvData, visualizationVariables, rankVariable)
+const loadContainer = document.getElementById("load-container")
+const loadButton = document.getElementById("load-button") as HTMLButtonElement | undefined
 
-setupSegmentedControl("visualization-control", visualizationVariables)
+if (loadButton && loadContainer) {
+    const lazySetup = () => {
+        loadButton.classList.add("loading")
+        loadButton.disabled = true;
 
-setupMap(data, visualizationVariables, rankVariable)
+        import("./setup.ts").then(({ default: setup }) => {
+            try {
+                setup(tableColumns, visualizationVariables, rankVariable);
+            } catch (e) {
+                console.log("Error while in visualization setup. ", e)
+            }
 
-setupTable("visualization-table", "visualization-table-pagination", data, tableColumns)
+            loadContainer.remove()
+        }).catch(() => {
+            console.log("Could not import setup scripts.")
 
+            loadButton.classList.remove("loading")
+            loadButton.disabled = false;
+        })
+    }
+    loadButton.onclick = lazySetup;
+} else {
+    console.log("Load button callback was not registered.")
+}

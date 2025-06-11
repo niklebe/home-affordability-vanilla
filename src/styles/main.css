@@ -56,3 +56,45 @@
   margin-top: 20px;
   text-align: center;
 }
+
+#load-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  bottom: 20px;
+  right: 20px;
+  background-color: #f6f8fb;
+  z-index: 10;
+}
+
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: inherit;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  /* space between spinner and text */
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#load-button .button-spinner {
+  display: none;
+}
+
+#load-button.loading .button-spinner {
+  display: inline-block;
+}
+
+#load-button.loading .button-text {
+  display: none;
+}
