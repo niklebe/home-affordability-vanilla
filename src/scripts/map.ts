@@ -1,7 +1,7 @@
 import counties from "../data/geo/counties_0.05.json"
 import states from "../data/geo/states_0.05.json"
 
-import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONFeature, GeoJSONSource, Map, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
+import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONFeature, GeoJSONSource, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 import 'mapbox-gl/dist/mapbox-gl.css';
 // @ts-expect-error no types
 import { jenksBuckets } from "geobuckets";
