@@ -1,19 +1,16 @@
 import counties from "../data/geo/counties_0.05.json"
 import states from "../data/geo/states_0.05.json"
 
-import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONFeature, GeoJSONSource, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
+import mapboxgl, { ExpressionSpecification, FeatureSelector, GeoJSONFeature, GeoJSONSource, Map, Popup, TargetFeature } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 import 'mapbox-gl/dist/mapbox-gl.css';
 // @ts-expect-error no types
 import { jenksBuckets } from "geobuckets";
 import centerOfMass from '@turf/center-of-mass';
+import { newMacrotask, notFalsy } from "./utils";
 
 mapboxgl.accessToken = import.meta.env.VITE_PUBLIC_MAPBOX_TOKEN!;
 
 const usaBbox: [number, number, number, number] = [-124.848974, 24.396308, -66.93457, 49.384358];
-
-function notFalsy<T>(value: T): value is NonNullable<T> {
-    return Boolean(value); // filters out null and undefined
-}
 
 const stepColors = [
     "#f7fbff",
@@ -26,13 +23,31 @@ const stepColors = [
     "#084594",
 ]
 
+function getRandomSubset(arr: any[], maxItems = 100) {
+    // If array is shorter than maxItems, return the whole array
+    if (arr.length <= maxItems) return [...arr];
+
+    // Shuffle a copy of the array using Fisher-Yates shuffle
+    const shuffled = [...arr];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Return the first maxItems elements
+    return shuffled.slice(0, maxItems);
+}
+
 const stepsFromValues = async (
     values: number[]
 ) => {
-    // const max = Math.max(...values);
-    // const step = Math.round(max / 7);
-    const stepValues = (await jenksBuckets(values, 7)).map(Math.round);
-    return stepValues as number[]
+    // const stepValues = (await jenksBuckets(values, 7)).map(Math.round);
+
+    // Taking subset to speed up jenks algorithm.
+    const subset = getRandomSubset(values, 200);
+    const stepValuesSubset = (await jenksBuckets(subset, 7)).map(Math.round);
+
+    return stepValuesSubset as number[]
 };
 
 // These are used to close popups when no features are hovered
@@ -66,21 +81,7 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         }).filter(notFalsy)
     } as GeoJSON.FeatureCollection
 
-    const getTop3CountiesInState = (state: string) => {
-        const countiesInState = countiesWithData.features.filter(c => c.properties?.STATEFP == state);
-        return countiesInState.sort((a, b) => {
-            if (!a?.properties?.Rank || !b?.properties?.Rank) return 0;
-            return a.properties.Rank - b.properties.Rank
-        }).slice(0, 3)
-    }
-
-    // Pre-generate natural breaks values for every visualization column
-    const visualizationSteps = {} as { [key: string]: number[] };
-    for (const col of visualizationVariables) {
-        const values = data.map(x => x[col]).filter(x => (x && typeof x === "number"));
-        const colSteps = await stepsFromValues(values as number[])
-        visualizationSteps[col] = colSteps
-    }
+    await newMacrotask();
 
     const map = new mapboxgl.Map({
         container: 'map',
@@ -92,26 +93,65 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         }
     });
 
+    await newMacrotask();
+
     let selectedVisualizationVariable = visualizationVariables[0];
     let selectedState: TargetFeature | GeoJSONFeature | undefined;
     const metricTopName = () => `Top10 -${selectedState ? ` ${selectedState.properties?.State}-` : ''} ${selectedVisualizationVariable}`
 
+    const getTop3CountiesInState = (state: string) => {
+        const countiesInState = countiesWithData.features.filter(c => c.properties?.STATEFP == state);
+        return countiesInState.sort((a, b) => {
+            if (!a?.properties?.Rank || !b?.properties?.Rank) return 0;
+            return a.properties.Rank - b.properties.Rank
+        }).slice(0, 3)
+    }
+
+    // Pre-generate natural breaks values for every visualization column
+    const visualizationSteps = {} as { [key: string]: number[] };
+
+
+    // async function addVisualizationSteps(colIndex: number) {
+    //     const col = visualizationVariables[colIndex]
+    //     const values = data.map(x => x[col]).filter(x => (x && typeof x === "number"));
+    //     const colSteps = await stepsFromValues(values as number[])
+    //     visualizationSteps[col] = colSteps
+    //     if (colIndex < visualizationVariables.length - 1) setTimeout(async () => {
+    //         await addVisualizationSteps(colIndex + 1)
+    //     }, 0)
+    // }
+    // await addVisualizationSteps(0);
+
+    for (const col of visualizationVariables) {
+        await newMacrotask();
+
+        const values = data.map(x => x[col]).filter(x => (x && typeof x === "number"));
+        const colSteps = await stepsFromValues(values as number[])
+        visualizationSteps[col] = colSteps
+    }
+
+
+    await newMacrotask();
+
+
     function getCountyColorExpression() {
-        return [
+        const expression = [
             "case",
             // Error case
-            ["==", ["get", selectedVisualizationVariable], null],
-            "#ffe8e8",
+            ["!", ["to-boolean", ["get", selectedVisualizationVariable]]],
+            "#000",
             // Color scale
             [
                 "step",
                 ["get", selectedVisualizationVariable],
-                "#000",
                 ...visualizationSteps[selectedVisualizationVariable]
-                    .map((value, index) => [value, stepColors[index]])
+                    .map((value, index) => {
+                        return index === 0 ? [stepColors[0]] : [value, stepColors[index]]
+                    })
                     .flat(),
             ],
         ] as ExpressionSpecification;
+        return expression
     }
 
     function colorCountiesByColumn() {
@@ -326,7 +366,6 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
         });
     }
 
-
     function handleBlurInteractions() {
         // Previous interactions are removed because of different filters
         map.removeInteraction('county-mouseenter');
@@ -476,7 +515,6 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
             popup = undefined;
         })
     }
-
 
     map.once("load", () => {
 
@@ -646,6 +684,3 @@ export async function setupMap(data: { [key: string]: unknown }[], visualization
 
     return map
 }
-
-
-
