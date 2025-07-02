@@ -10,32 +10,37 @@ const rankVariable = "Variable A"
 // Change this to control which CSV columns appear in the table
 const tableColumns = ["NAME", "STATE", ...visualizationVariables]
 
+
+
 // -------- SETUP -----------------------------------------------
 
+const mainContainer = document.getElementById("container")
 const loadContainer = document.getElementById("load-container")
-const loadButton = document.getElementById("load-button") as HTMLButtonElement | undefined
+const loadSpinner = document.getElementById("load-spinner")
+const mapSection = document.getElementById("map-section")
+const tableSection = document.getElementById("table-section")
 
-if (loadButton && loadContainer) {
-    const lazySetup = () => {
-        loadButton.classList.add("loading")
-        loadButton.disabled = true;
-
-        import("./setup.ts").then(({ default: setup }) => {
-            try {
+addEventListener("load", () => {
+    if (loadContainer) {
+        const lazySetup = () => {
+            import("./setup.ts").then(({ default: setup }) => {
                 setup(tableColumns, visualizationVariables, rankVariable);
-            } catch (e) {
-                console.log("Error while in visualization setup. ", e)
-            }
+                loadContainer.remove()
+            }).catch(() => {
+                mapSection?.remove();
+                tableSection?.remove();
+                loadSpinner?.remove()
+                if (mainContainer) mainContainer.style.height = '30vh';
 
-            loadContainer.remove()
-        }).catch(() => {
-            console.log("Could not import setup scripts.")
+                const errorMessage = document.createElement("p");
+                errorMessage.textContent = 'Something went wrong.'
+                loadContainer?.appendChild(errorMessage)
 
-            loadButton.classList.remove("loading")
-            loadButton.disabled = false;
-        })
+                console.log("Error while loading and running setup scripts.")
+            })
+        }
+        lazySetup();
+    } else {
+        console.log("Load button callback was not registered.")
     }
-    loadButton.onclick = lazySetup;
-} else {
-    console.log("Load button callback was not registered.")
-}
+})

@@ -17,13 +17,9 @@
 <body>
   <div id="container">
     <div id="load-container">
-      <button id="load-button" class="ca-btn">
-        <span class="button-text">
-          Load visualization
-        </span>
-        <span class="button-spinner"></span>
-      </button>
+      <div id="load-spinner"></div>
     </div>
+
     <section id="map-section">
       <div id="map"></div>
 
@@ -44,37 +40,38 @@
         </div>
       </div>
     </section>
-
-    <section class="ca-scrll-tb ca-scrll-tb--fxd-hdr">
-      <div class="js-scroll-carousel" id="carousel_table_5">
-        <div id="table-wrapper" class="js-scroll-step-container js-step-container ca-scrll-tb__wpr"
-          data-carousel-per-page>
-          <table id="visualization-table" class="ca-tb ca-tb--crsstb ca-tb--fix">
-          </table>
+    <section id="table-section">
+      <div class="ca-scrll-tb ca-scrll-tb--fxd-hdr">
+        <div class="js-scroll-carousel" id="carousel_table_5">
+          <div id="table-wrapper" class="js-scroll-step-container js-step-container ca-scrll-tb__wpr"
+            data-carousel-per-page>
+            <table id="visualization-table" class="ca-tb ca-tb--crsstb ca-tb--fix">
+            </table>
+          </div>
+        </div>
+        <div class="ca-carousel-paginator ca-carousel-paginator--wth-arrws js-carousel-paginator-wrapper">
+          <button class="ca-carousel-paginator__arrw" data-carousel-id="carousel_table_1" data-carousel-action="prev">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+              <path class="ca-icon__colored-stroke" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="2"
+                d="M6 24l12-12 12 12" data-name="Live Stroke"></path>
+            </svg>
+          </button>
+          <div class="ca-carousel-paginator__dt-wpr" data-carousel-paginator-id="carousel_table_1">
+            <span class="ca-carousel-paginator__dt js-carousel-paginator" data-carousel-page="0"
+              data-carousel-active-page="true"></span>
+          </div>
+          <button class="ca-carousel-paginator__arrw" data-carousel-id="carousel_table_1" data-carousel-action="next">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+              <path class="ca-icon__colored-stroke" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="2"
+                d="M30 12L18 24 6 12" data-name="Live Stroke"></path>
+            </svg>
+          </button>
         </div>
       </div>
-      <div class="ca-carousel-paginator ca-carousel-paginator--wth-arrws js-carousel-paginator-wrapper">
-        <button class="ca-carousel-paginator__arrw" data-carousel-id="carousel_table_1" data-carousel-action="prev">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
-            <path class="ca-icon__colored-stroke" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="2"
-              d="M6 24l12-12 12 12" data-name="Live Stroke"></path>
-          </svg>
-        </button>
-        <div class="ca-carousel-paginator__dt-wpr" data-carousel-paginator-id="carousel_table_1">
-          <span class="ca-carousel-paginator__dt js-carousel-paginator" data-carousel-page="0"
-            data-carousel-active-page="true"></span>
-        </div>
-        <button class="ca-carousel-paginator__arrw" data-carousel-id="carousel_table_1" data-carousel-action="next">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
-            <path class="ca-icon__colored-stroke" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="2"
-              d="M30 12L18 24 6 12" data-name="Live Stroke"></path>
-          </svg>
-        </button>
+      <div id="pagination-container">
+        <div id="visualization-table-pagination"></div>
       </div>
     </section>
-    <div id="pagination-container">
-      <div id="visualization-table-pagination"></div>
-    </div>
 
   </div>
   <script type="module" src="/src/scripts/main.ts"></script>
